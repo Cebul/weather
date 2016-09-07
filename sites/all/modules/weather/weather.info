@@ -1,0 +1,8 @@
+name = Weather
+description = "Weather forecast module"
+core = 7.x
+version = "0.1"
+files[] = weather.module
+files[] = weather.install
+files[] = weather.admin.inc
+configure = admin/config/content/weather/settings
