@@ -11,16 +11,16 @@
  *
  * Displays help and module information.
  *
- * @param path 
+ * @param $path
  *   Which path of the site we're using to display help
- * @param arg 
+ * @param $arg
  *   Array that holds the current path as returned from arg() function
  */
 function weather_help($path, $arg) {
   switch ($path) {
-	case "admin/help#weather";
-	return '' . t("Displays weather forecast") . '';
-	break;
+    case "admin/help#weather";
+    return '' . t("Displays weather forecast") . '';
+  break;
   }
 }
 /**
@@ -36,7 +36,7 @@ function weather_permission() {
 }
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
  */
 function weather_menu() {
   // Admin page.
@@ -49,44 +49,44 @@ function weather_menu() {
     'file' => 'weather.admin.inc'
   );
   $items['weather'] = array(
-	'title' => '5 Day Weather Forecast for Wrocław, PL',
+    'title' => '5 Day Weather Forecast for Wrocław, PL',
     'page callback' => 'weather_5_day_forecast',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['formforecast'] = array(
-	'title' => 'Choose your town form.',
+    'title' => 'Choose your town form.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('weather_nameform'),
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['tomorrow_sum'] = array(
-	'title' => 'Look at tomorrow\'s summary.',
+    'title' => 'Look at tomorrow\'s summary.',
     'page callback' => 'create_a_node',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM,
-  ); 
+  );
   $items['Warsaw'] = array(
-	'title' => 'Current weather in Warsaw',
+    'title' => 'Current weather in Warsaw',
     'page callback' => 'weather_warsaw',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
   );
   $items['London'] = array(
-	'title' => 'Current weather in London',
+    'title' => 'Current weather in London',
     'page callback' => 'weather_london',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
     );
   $items['Paris'] = array(
-	'title' => 'Current weather in Paris',
+    'title' => 'Current weather in Paris',
     'page callback' => 'weather_paris',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
     );
   $items['Moskow'] = array(
-	'title' => 'Current weather in Moskow',
+    'title' => 'Current weather in Moskow',
     'page callback' => 'weather_moskow',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
@@ -104,14 +104,14 @@ function weather_5_day_forecast() {
   $wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/astronomy/forecast10day/q/Poland/Wroclaw.json");
   $wroclaw = json_decode($wroclaw_json);
   $country_name = $wroclaw->{'location'}->{'country_name'};
-  $sunrise_h = $wroclaw->{'sun_phase'}->{'sunrise'}->{'hour'};  
-  $sunrise_min = $wroclaw->{'sun_phase'}->{'sunrise'}->{'minute'}; 
+  $sunrise_h = $wroclaw->{'sun_phase'}->{'sunrise'}->{'hour'};
+  $sunrise_min = $wroclaw->{'sun_phase'}->{'sunrise'}->{'minute'};
   $sunset_h = $wroclaw->{'sun_phase'}->{'sunset'}->{'hour'};
   $sunset_min = $wroclaw->{'sun_phase'}->{'sunset'}->{'minute'};
 
   $output = '';
 
- 	for($i=0; $i<10; $i++) {
+  for ($i=0; $i<10; $i++) {
 
       $day_time = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[$i]->title;
       $day_precip = $wroclaw->{'forecast'}->{'simpleforecast'}->{'forecastday'}[$i]->qpf_day->mm;
@@ -126,12 +126,10 @@ function weather_5_day_forecast() {
       $output .= t('<br />Night time precipitation: ' . $night_precip . ' mm');
       $output .= t('<br />Night time humidity: ' . $humidity);
       $output .= t('<br />-------------------');
-      $i++;	
+      $i++;
     }
-
-return $output;	
-  
-}	
+    return $output;
+}
 
 /**
  * Getting weather data (Warsaw).
@@ -147,9 +145,8 @@ function weather_warsaw() {
 
   $output = '';
   $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
-
-	return $output;		
-}
+  return $output;
+  }
 
 /**
  * Getting weather data (London).
@@ -167,8 +164,8 @@ function weather_london() {
   $output = '';
   $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
 
-	return $output;		
-}
+  return $output;
+  }
 
 /**
  * Getting weather data (Paris).
@@ -185,7 +182,7 @@ function weather_paris() {
   $output = '';
   $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
 
-	return $output;		
+  return $output;
 }
 
 /**
@@ -204,7 +201,7 @@ function weather_moskow() {
   $output = '';
   $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
 
-	return $output;		
+  return $output;
 }
 
 /**
@@ -213,29 +210,28 @@ function weather_moskow() {
 
 function weather_nameform() {
 
-	$form['town'] = array(
-		'#title' => t('Town'),
-		'#type' => 'fieldset',
-		'#description' => t('You can choose your town.'),
-		'#collapsible' => TRUE,
-		'#collpsed' => FALSE
-		); 
-	$form['town_options'] = array(
-		'#type' => 'value',
-		'#value' => array(t('Warsaw'), t('London'), t('Paris'), t('Moskow'))
-		);
-	$form['town']['your_town'] = array(
-		'#title' => t('Your town'),
-		'#type' => 'select',
-		'#description' => t('Choose your town.'),
-		'#options' => $form['town_options']['#value']
-		);
-	$form['submit'] = array(
-		'#type' => 'submit',
-		'#value' => t('Submit')
-		);
-
-	return $form;
+  $form['town'] = array(
+    '#title' => t('Town'),
+    '#type' => 'fieldset',
+    '#description' => t('You can choose your town.'),
+    '#collapsible' => TRUE,
+    '#collpsed' => FALSE
+    );
+  $form['town_options'] = array(
+    '#type' => 'value',
+    '#value' => array(t('Warsaw'), t('London'), t('Paris'), t('Moskow'))
+    );
+  $form['town']['your_town'] = array(
+    '#title' => t('Your town'),
+    '#type' => 'select',
+    '#description' => t('Choose your town.'),
+    '#options' => $form['town_options']['#value']
+    );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Check')
+    );
+  return $form;
 }
 
 /**
@@ -244,9 +240,9 @@ function weather_nameform() {
 
 function weather_nameform_submit($form, &$form_state) {
 
-	$city_key = $form_state['values']['your_town'];
-	$city = $form_state['values']['town_options'][$city_key];
-	$form_state['redirect'] = url('/'.$city, array('absolute'=>true));
+  $city_key = $form_state['values']['your_town'];
+  $city = $form_state['values']['town_options'][$city_key];
+  $form_state['redirect'] = url('/' . $city, array('absolute' => TRUE, ));
 }
 
 /**
@@ -255,14 +251,13 @@ function weather_nameform_submit($form, &$form_state) {
 
 function tomorrow_forecast() {
 
-	$wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
-  	$wroclaw = json_decode($wroclaw_json);
-  	$weather_sum = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[2]->fcttext_metric;
+  $wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
+  $wroclaw = json_decode($wroclaw_json);
+  $weather_sum = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[2]->fcttext_metric;
+  $output = '';
+  $output = $weather_sum;
 
-  	$output = '';
-  	$output = $weather_sum;
-
-  	return $output;
+  return $output;
 
 }
 /**
@@ -273,11 +268,11 @@ function create_a_node() {
 
   if (user_access('forecaster')) {
   $sum_text = 'Look at the tomorrow\'s weather in Wrocław.';
-  
+
   $node = new stdClass();
   $node->type = 'article';
   node_object_prepare($node);
-  
+
   $node->title    = 'Tomorrow\'s weather summary.';
   $node->language = LANGUAGE_NONE;
   //$node->status = NODE_NOT_PUBLISHED;
@@ -286,7 +281,7 @@ function create_a_node() {
   $node->body[$node->language][0]['summary'] = text_summary($sum_text);
   $node->body[$node->language][0]['format']  = 'full_html';
 
-  $node->comment = COMMENT_NODE_CLOSED;  
+  $node->comment = COMMENT_NODE_CLOSED;
   $path = 'tomorrow_sum';
   $node->path = array('alias' => $path);
 
@@ -301,12 +296,12 @@ function create_a_node() {
 
 function weather_block_info() {
   $blocks['weather'] = array(
-	  // The name that will appear in the block list.
-	  'info' => t('Todays weather summary'),
-	  'access arguments' => array('forecaster'),
-	  // Default setting.
-	  'cache' => DRUPAL_CACHE_PER_ROLE,
-	  );
+  // The name that will appear in the block list.
+    'info' => t('Todays weather summary'),
+    'access arguments' => array('forecaster'),
+    // Default setting.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+    );
   return $blocks;
 }
 
@@ -318,11 +313,11 @@ function weather_block_view($delta = '') {
 
   switch ($delta) {
     case 'weather':
-	  $block['subject'] = t('Today\'s weather summary');
-	  $block['content'] = weather_block_contents($delta);
-	  return $block;
-	  break;
-	}
+      $block['subject'] = t('Today\'s weather summary');
+      $block['content'] = weather_block_contents($delta);
+      return $block;
+      break;
+  }
 }
 
 /**
@@ -332,20 +327,19 @@ function weather_block_view($delta = '') {
 function weather_block_contents($delta) {
 
   switch ($delta) {
-  	case 'weather':
-  	  if (user_access('forecaster')) {
+    case 'weather':
+    if (user_access('forecaster')) {
+      $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
+      $parsed_json = json_decode($json_string);
 
-  	  	$json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
-  		$parsed_json = json_decode($json_string);
-	  
-  		$output = '';
- 		$output .= ' City: ' . $parsed_json->{'location'}->{'city'} . '<br />';
- 		$output .= ' Country: ' . $parsed_json->{'location'}->{'country_name'} . '<br />';
-  		$output .= ' Temperature: ' . $parsed_json->{'current_observation'}->{'temp_c'}  . '°C' . '<br />';
-  		$output .= ' Today\'s weather: ' . $parsed_json->{'current_observation'}->{'weather'} . '<br />';
+      $output = '';
+      $output .= ' City: ' . $parsed_json->{'location'}->{'city'} . '<br />';
+      $output .= ' Country: ' . $parsed_json->{'location'}->{'country_name'} . '<br />';
+      $output .= ' Temperature: ' . $parsed_json->{'current_observation'}->{'temp_c'} . '°C' . '<br />';
+      $output .= ' Today\'s weather: ' . $parsed_json->{'current_observation'}->{'weather'} . '<br />';
 
-  		return $output;
-  	  }
-  	  break;
-  	}
+      return $output;
+    }
+  break;
   }
+}
