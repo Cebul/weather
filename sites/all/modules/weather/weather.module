@@ -65,27 +65,27 @@ function weather_menu() {
 	'title' => 'Look at tomorrow\'s summary.',
     'page callback' => 'create_a_node',
     'access arguments' => array('forecaster'),
-    'type' => MENU_NORMAL_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
   ); 
-  $items['weather/Warsaw'] = array(
+  $items['Warsaw'] = array(
 	'title' => 'Current weather in Warsaw',
     'page callback' => 'weather_warsaw',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
   );
-  $items['weather/London'] = array(
+  $items['London'] = array(
 	'title' => 'Current weather in London',
     'page callback' => 'weather_london',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
     );
-  $items['weather/Paris'] = array(
+  $items['Paris'] = array(
 	'title' => 'Current weather in Paris',
     'page callback' => 'weather_paris',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM
     );
-  $items['weather/Moskow'] = array(
+  $items['Moskow'] = array(
 	'title' => 'Current weather in Moskow',
     'page callback' => 'weather_moskow',
     'access arguments' => array('forecaster'),
@@ -94,6 +94,10 @@ function weather_menu() {
 
   return $items;
 }
+
+/**
+ * Getting data for 5 day weather forecast in Wrocław.
+ */
 
 function weather_5_day_forecast() {
 
@@ -129,6 +133,10 @@ return $output;
   
 }	
 
+/**
+ * Getting weather data (Warsaw).
+ */
+
 function weather_warsaw() {
   $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Warsaw.json");
   $parsed_json = json_decode($json_string);
@@ -142,6 +150,10 @@ function weather_warsaw() {
 
 	return $output;		
 }
+
+/**
+ * Getting weather data (London).
+ */
 
 function weather_london() {
   $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/England/London.json");
@@ -158,6 +170,10 @@ function weather_london() {
 	return $output;		
 }
 
+/**
+ * Getting weather data (Paris).
+ */
+
 function weather_paris() {
   $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/France/Paris.json");
   $parsed_json = json_decode($json_string);
@@ -171,6 +187,10 @@ function weather_paris() {
 
 	return $output;		
 }
+
+/**
+ * Getting weather data (Moskow).
+ */
 
 function weather_moskow() {
 
@@ -218,20 +238,25 @@ function weather_nameform() {
 	return $form;
 }
 
+/**
+ * Implements hook_submit().
+ */
 
 function weather_nameform_submit($form, &$form_state) {
 
 	$city_key = $form_state['values']['your_town'];
 	$city = $form_state['values']['town_options'][$city_key];
-	$form_state['redirect'] = url('weather/'.$city, array('absolute'=>true));
-
+	$form_state['redirect'] = url('/'.$city, array('absolute'=>true));
 }
+
+/**
+ * Getting tomorrow's forecast summary
+ */
+
 function tomorrow_forecast() {
 
 	$wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
   	$wroclaw = json_decode($wroclaw_json);
-  	$location = $wroclaw->{'location'}->{'city'};
-  	$country_name = $wroclaw->{'location'}->{'country_name'};
   	$weather_sum = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[2]->fcttext_metric;
 
   	$output = '';
@@ -240,6 +265,9 @@ function tomorrow_forecast() {
   	return $output;
 
 }
+/**
+ * Creating a new node object
+ */
 
 function create_a_node() {
 
@@ -267,11 +295,9 @@ function create_a_node() {
   }
 }
 
-function tomorrows_summary() {
-	$json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/forecast10day/q/Poland/Wroclaw.json");
-	$parsed_json = json_decode($json_string);
-	dsm($parsed_json);
-}
+/**
+ * Implements hook_block_info().
+ */
 
 function weather_block_info() {
   $blocks['weather'] = array(
