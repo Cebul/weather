@@ -45,11 +45,11 @@ function weather_menu() {
     'description' => 'Perform administration tasks for Weather Module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('weather_admin_form'),
-    'access arguments' => TRUE,
+    'access arguments' => array('forecaster'),
     'file' => 'weather.admin.inc'
   );
   $items['weather'] = array(
-	'title' => '5 day weather forecast',
+	'title' => '5 Day Weather Forecast for Wrocław, PL',
     'page callback' => 'weather_5_day_forecast',
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM,
@@ -61,14 +61,12 @@ function weather_menu() {
     'access arguments' => array('forecaster'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['weather/%/%'] = array(
-	'title' => 'Current weather in town',
-    'page callback' => 'weather_town',
-    'page_arguments' => array(1,2),
+  $items['tomorrow_sum'] = array(
+	'title' => 'Look at tomorrow\'s summary.',
+    'page callback' => 'create_a_node',
     'access arguments' => array('forecaster'),
-    'access callback' => TRUE,
-    'type' => MENU_NORMAL_ITEM
-  );
+    'type' => MENU_NORMAL_CALLBACK,
+  ); 
   $items['weather/Warsaw'] = array(
 	'title' => 'Current weather in Warsaw',
     'page callback' => 'weather_warsaw',
@@ -99,18 +97,37 @@ function weather_menu() {
 
 function weather_5_day_forecast() {
 
-  $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Warsaw.json");
-  $parsed_json = json_decode($json_string);
-  $location = $parsed_json->{'location'}->{'city'};
-  $country_name = $parsed_json->{'location'}->{'country_name'};
-  $temp_c = $parsed_json->{'current_observation'}->{'temp_c'};
-  $weather = $parsed_json->{'current_observation'}->{'weather'};
+  $wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/astronomy/forecast10day/q/Poland/Wroclaw.json");
+  $wroclaw = json_decode($wroclaw_json);
+  $country_name = $wroclaw->{'location'}->{'country_name'};
+  $sunrise_h = $wroclaw->{'sun_phase'}->{'sunrise'}->{'hour'};  
+  $sunrise_min = $wroclaw->{'sun_phase'}->{'sunrise'}->{'minute'}; 
+  $sunset_h = $wroclaw->{'sun_phase'}->{'sunset'}->{'hour'};
+  $sunset_min = $wroclaw->{'sun_phase'}->{'sunset'}->{'minute'};
 
   $output = '';
-  $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
 
-	return $output;		
-}
+ 	for($i=0; $i<10; $i++) {
+
+      $day_time = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[$i]->title;
+      $day_precip = $wroclaw->{'forecast'}->{'simpleforecast'}->{'forecastday'}[$i]->qpf_day->mm;
+      $night_precip = $wroclaw->{'forecast'}->{'simpleforecast'}->{'forecastday'}[$i]->qpf_night->mm;
+      $humidity = $wroclaw->{'forecast'}->{'simpleforecast'}->{'forecastday'}[$i]->avehumidity;
+
+      $output .= t('<br />Day: ' . $day_time);
+      $output .= t('<br />Sunrise: ' . $sunrise_h . ':' . $sunrise_min);
+      $output .= t('<br />Sunset: ' . $sunset_h . ':' . $sunset_min);
+      $output .= t('<br />Daytime precipitation: ' . $day_precip . ' mm');
+      $output .= t('<br />Daytime humidity: ' . $humidity);
+      $output .= t('<br />Night time precipitation: ' . $night_precip . ' mm');
+      $output .= t('<br />Night time humidity: ' . $humidity);
+      $output .= t('<br />-------------------');
+      $i++;	
+    }
+
+return $output;	
+  
+}	
 
 function weather_warsaw() {
   $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Warsaw.json");
@@ -134,6 +151,7 @@ function weather_london() {
   $temp_c = $parsed_json->{'current_observation'}->{'temp_c'};
   $weather = $parsed_json->{'current_observation'}->{'weather'};
 
+
   $output = '';
   $output = t('City: ' . $location . '<br />Country: ' . $country_name . '<br />Current temperature: ' . $temp_c . '<br />Current weather: ' . $weather);
 
@@ -156,7 +174,7 @@ function weather_paris() {
 
 function weather_moskow() {
 
-  $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Russia/Moskow.json");
+  $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Moskow.json");
   $parsed_json = json_decode($json_string);
   $location = $parsed_json->{'location'}->{'city'};
   $country_name = $parsed_json->{'location'}->{'country_name'};
@@ -202,15 +220,57 @@ function weather_nameform() {
 
 
 function weather_nameform_submit($form, &$form_state) {
+
 	$city_key = $form_state['values']['your_town'];
 	$city = $form_state['values']['town_options'][$city_key];
 	$form_state['redirect'] = url('weather/'.$city, array('absolute'=>true));
+
+}
+function tomorrow_forecast() {
+
+	$wroclaw_json = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
+  	$wroclaw = json_decode($wroclaw_json);
+  	$location = $wroclaw->{'location'}->{'city'};
+  	$country_name = $wroclaw->{'location'}->{'country_name'};
+  	$weather_sum = $wroclaw->{'forecast'}->{'txt_forecast'}->{'forecastday'}[2]->fcttext_metric;
+
+  	$output = '';
+  	$output = $weather_sum;
+
+  	return $output;
+
 }
 
-function weather_town($value1) {
-	// @param $value1 is the name of the town 
-	$town = $value1;
-	dsm($town);
+function create_a_node() {
+
+  if (user_access('forecaster')) {
+  $sum_text = 'Look at the tomorrow\'s weather in Wrocław.';
+  
+  $node = new stdClass();
+  $node->type = 'article';
+  node_object_prepare($node);
+  
+  $node->title    = 'Tomorrow\'s weather summary.';
+  $node->language = LANGUAGE_NONE;
+  //$node->status = NODE_NOT_PUBLISHED;
+
+  $node->body[$node->language][0]['value']   = tomorrow_forecast();
+  $node->body[$node->language][0]['summary'] = text_summary($sum_text);
+  $node->body[$node->language][0]['format']  = 'full_html';
+
+  $node->comment = COMMENT_NODE_CLOSED;  
+  $path = 'tomorrow_sum';
+  $node->path = array('alias' => $path);
+
+  $node = node_submit($node);
+  node_save($node);
+  }
+}
+
+function tomorrows_summary() {
+	$json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/forecast10day/q/Poland/Wroclaw.json");
+	$parsed_json = json_decode($json_string);
+	dsm($parsed_json);
 }
 
 function weather_block_info() {
@@ -232,7 +292,7 @@ function weather_block_view($delta = '') {
 
   switch ($delta) {
     case 'weather':
-	  $block['subject'] = t('Today weather summary');
+	  $block['subject'] = t('Today\'s weather summary');
 	  $block['content'] = weather_block_contents($delta);
 	  return $block;
 	  break;
@@ -244,17 +304,19 @@ function weather_block_view($delta = '') {
  */
 
 function weather_block_contents($delta) {
+
   switch ($delta) {
   	case 'weather':
   	  if (user_access('forecaster')) {
-	    $json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
-  		$parsed_json = json_decode($json_string);
 
+  	  	$json_string = file_get_contents("http://api.wunderground.com/api/5c324a3b584e2557/geolookup/conditions/forecast/q/Poland/Wroclaw.json");
+  		$parsed_json = json_decode($json_string);
+	  
   		$output = '';
- 		$output .= '<p> City' . $parsed_json->{'location'}->{'city'} . '</p>';
- 		$output .= $parsed_json->{'location'}->{'country_name'};
-  		$output .= $parsed_json->{'current_observation'}->{'temp_c'};
-  		$output .= $parsed_json->{'current_observation'}->{'weather'};
+ 		$output .= ' City: ' . $parsed_json->{'location'}->{'city'} . '<br />';
+ 		$output .= ' Country: ' . $parsed_json->{'location'}->{'country_name'} . '<br />';
+  		$output .= ' Temperature: ' . $parsed_json->{'current_observation'}->{'temp_c'}  . '°C' . '<br />';
+  		$output .= ' Today\'s weather: ' . $parsed_json->{'current_observation'}->{'weather'} . '<br />';
 
   		return $output;
   	  }
